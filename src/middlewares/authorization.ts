@@ -23,6 +23,7 @@ const PROTECTED_PREFIXES: string[] = [
   "/v1/groups",
   "/v1/followers",
   "/v1/chats",
+  "/v1/notes",
 ];
 
 export const generalAuthFunction = async (
