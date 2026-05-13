@@ -2,11 +2,8 @@ import { Request, Response } from "express";
 import { withControllerErrorHandling } from "../../middlewares/error_handlers";
 import responseHandler from "../../middlewares/response_handler";
 import {
-  getGroupsService,
-  getGroupByIdService,
-  joinLeaveGroupService,
-  getGroupMembersService,
-  getMyGroupsService,
+  getGroupsService, getGroupByIdService, joinLeaveGroupService,
+  getGroupMembersService, getMyGroupsService, createGroupService,
 } from "../services/groups_service";
 
 export const getGroups = withControllerErrorHandling(async (req: Request, res: Response) => {
@@ -37,5 +34,16 @@ export const getGroupMembers = withControllerErrorHandling(async (req: Request, 
 export const getMyGroups = withControllerErrorHandling(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
   const result = await getMyGroupsService(userId);
+  return responseHandler(result.message, result.statusCode, result.data, res);
+});
+
+export const createGroup = withControllerErrorHandling(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.userId;
+  const { name, description } = req.body;
+  const file = (req as any).file;
+  const result = await createGroupService({
+    userId, name, description,
+    coverBuffer: file?.buffer,
+  });
   return responseHandler(result.message, result.statusCode, result.data, res);
 });

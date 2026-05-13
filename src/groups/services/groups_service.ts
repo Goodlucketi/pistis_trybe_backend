@@ -100,3 +100,41 @@ export const getMyGroupsService = withServiceErrorHandling(async (userId: string
 
   return responseHandler("My groups fetched", StatusCodes.OK, groups);
 });
+
+export const createGroupService = withServiceErrorHandling(
+  async ({
+    userId,
+    name,
+    description,
+    coverBuffer,
+  }: {
+    userId: string;
+    name: string;
+    description?: string;
+    coverBuffer?: Buffer;
+  }) => {
+    let coverUrl: string | null = null;
+
+    if (coverBuffer) {
+      const { uploadToCloudinary } = await import("../../configurations/cloudinary");
+      const result = await uploadToCloudinary(coverBuffer, "pistis_trybe/groups", {
+        resource_type: "image",
+        transformation: [{ width: 800, height: 400, crop: "fill" }],
+      });
+      coverUrl = result.secure_url;
+    }
+
+    const group = await Group.create({
+      name: name.trim(),
+      description: description?.trim() || null,
+      coverUrl,
+      createdBy: userId,
+    });
+
+    // Auto-join creator as admin
+    await GroupMember.create({ groupId: group._id, userId, role: "admin" });
+
+    const populated = await group.populate("createdBy", "_id fullName avatarUrl");
+    return responseHandler("Group created", StatusCodes.Created, populated);
+  }
+);
