@@ -14,7 +14,14 @@ export const createNoteService = withServiceErrorHandling(
     userId: string; title?: string; content: string;
     reference?: string; translation?: string; verseText?: string;
   }) => {
-    const note = await Note.create({ userId, title, content, reference, translation, verseText });
+    const note = await Note.create({
+      userId,
+      content,
+      ...(title && { title }),
+      ...(reference && { reference }),
+      ...(translation && { translation }),
+      ...(verseText && { verseText }),
+    });
     return responseHandler("Note created", StatusCodes.Created, note);
   }
 );
