@@ -2,7 +2,7 @@ import { Router } from "express";
 import authV1Router from "./auth/auth.routes";
 import usersV1Router from "./users/users.routes";
 import postsV1Router from "./posts/posts.routes";
-import groupsV1Router from "./groups/groups.routes";
+import groupsV1Router from "./posts/groups.routes";
 import followersV1Router from "./followers/followers.routes";
 import chatsV1Router from "./chats/chats.routes";
 import notesv1Router from "./notes/notes.routes";
