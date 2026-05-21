@@ -26,7 +26,7 @@ postsV1Router.get("/groups", getGroups);
 postsV1Router.post("/groups", uploadSingle, createGroup);
 postsV1Router.get("/groups/my", getMyGroups);
 postsV1Router.get("/groups/:id", getGroupById);
-postsV1Router.patch("/groups/:id", updateGroup);
+postsV1Router.patch("/groups/:id", updateGroup);    
 postsV1Router.delete("/groups/:id", deleteGroup);
 postsV1Router.post("/groups/:id/join", joinLeaveGroup);
 
