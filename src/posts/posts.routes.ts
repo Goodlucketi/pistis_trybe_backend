@@ -37,7 +37,7 @@ postsV1Router.patch("/groups/:id/members/:userId/promote", promoteMember);
 
 // Group posts - now use unified createPost/deletePost
 postsV1Router.get("/groups/:id/posts", getGroupPosts);
-postsV1Router.post("/groups/:id/posts", uploadMultiple, createPost); // <-- was createGroupPost
-postsV1Router.delete("/groups/:id/posts/:postId", deletePost); // <-- was deleteGroupPost
+postsV1Router.post("/groups/:id/posts", uploadMultiple, createGroupPost); // <-- was createGroupPost
+postsV1Router.delete("/groups/:id/posts/:postId", deleteGroupPost); // <-- was deleteGroupPost
 
 export default postsV1Router;
