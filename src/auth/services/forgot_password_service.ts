@@ -12,7 +12,7 @@ const forgotPasswordService = withServiceErrorHandling(
     // Generic response — never reveal if email exists
     const genericMsg = "If an account with that email exists, a reset link has been sent.";
 
-    if (!user || user.singupMethod === "google") {
+    if (!user || user.signupMethod === "google") {
       return responseHandler(genericMsg, StatusCodes.OK, null);
     }
 

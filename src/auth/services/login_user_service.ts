@@ -25,7 +25,7 @@ const loginUserService = withServiceErrorHandling(
       "biography",
       "avatarUrl",
       "role",
-      "singupMethod",
+      "signupMethod",
       "isActive",
       "isVerified",
       "isBlocked",
@@ -39,7 +39,7 @@ const loginUserService = withServiceErrorHandling(
       throw createError(AuthResponses.BLOCKED_ACCOUNT, StatusCodes.Forbidden);
     }
 
-    if (user.singupMethod !== "direct") {
+    if (user.signupMethod !== "direct") {
       throw createError(
         AuthResponses.DIFFERENT_SIGNUP_METHOD,
         StatusCodes.Forbidden,
@@ -96,7 +96,7 @@ const extractUserDetails = (
     biography: userData.biography,
     avatarUrl: userData.avatarUrl,
     role: userData.role,
-    singupMethod: userData.singupMethod,
+    signupMethod: userData.signupMethod,
     isActive: userData.isActive,
     isVerified: userData.isVerified,
     isBlocked: userData.isBlocked,

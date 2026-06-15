@@ -40,7 +40,7 @@ const registerUserService = withServiceErrorHandling(
       isActive: true,
       isBlocked: false,
       role: role ?? "user",
-      singupMethod: "direct",
+      signupMethod: "direct",
     };
 
     const newUser = await User.create(createUserPayload);

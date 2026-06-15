@@ -72,7 +72,7 @@ export const googleAuthService = withServiceErrorHandling(
       avatarUrl: user.avatarUrl,
       biography: user.biography,
       role: user.role,
-      singupMethod: user.singupMethod,
+      signupMethod: user.signupMethod,
       isVerified: user.isVerified,
       isActive: user.isActive,
     };
