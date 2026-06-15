@@ -2,6 +2,7 @@ import { createError, withServiceErrorHandling } from "../../middlewares/error_h
 import responseHandler from "../../middlewares/response_handler";
 import { Follow } from "../followers.model";
 import { User } from "../../users/users.models";
+import { Notification } from "../../notifications/notifications.models";
 import { StatusCodes } from "../../utilities/status_codes";
 
 export const toggleFollowService = withServiceErrorHandling(
@@ -9,7 +10,6 @@ export const toggleFollowService = withServiceErrorHandling(
     if (!followingId || followingId === "undefined") {
       throw createError("Invalid user ID", StatusCodes.BadRequest);
     }
-
     if (followerId === followingId) {
       throw createError("You cannot follow yourself", StatusCodes.BadRequest);
     }
@@ -24,6 +24,18 @@ export const toggleFollowService = withServiceErrorHandling(
       return responseHandler("Unfollowed", StatusCodes.OK, { following: false });
     } else {
       await Follow.create({ followerId, followingId });
+
+      // FIX: Create a follow notification for the target user
+      const follower = await User.findById(followerId).lean();
+      await Notification.create({
+        userId: followingId,
+        type: "follow",
+        title: "New follower",
+        body: `${follower?.fullName || "Someone"} started following you.`,
+        referenceId: followerId,
+        referenceModel: "User",
+      });
+
       return responseHandler("Now following", StatusCodes.OK, { following: true });
     }
   }
@@ -37,9 +49,7 @@ export const getFollowersService = withServiceErrorHandling(
       .limit(limit)
       .populate("followerId", "_id fullName avatarUrl email")
       .lean();
-
     const total = await Follow.countDocuments({ followingId: userId });
-
     return responseHandler("Followers fetched", StatusCodes.OK, {
       followers: followers.map((f: any) => f.followerId),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
@@ -55,9 +65,7 @@ export const getFollowingService = withServiceErrorHandling(
       .limit(limit)
       .populate("followingId", "_id fullName avatarUrl email")
       .lean();
-
     const total = await Follow.countDocuments({ followerId: userId });
-
     return responseHandler("Following fetched", StatusCodes.OK, {
       following: following.map((f: any) => f.followingId),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },

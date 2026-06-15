@@ -35,7 +35,7 @@ export const googleAuthService = withServiceErrorHandling(
       // If they signed up with email before, link their Google account
       if (!user.googleId) {
         user.googleId = googleId;
-        user.singupMethod = "google";
+        user.signupMethod = "google";
         if (!user.avatarUrl && picture) user.avatarUrl = picture;
         if (!user.fullName && name) user.fullName = name;
       }
@@ -46,7 +46,7 @@ export const googleAuthService = withServiceErrorHandling(
         googleId,
         fullName: name || null,
         avatarUrl: picture || null,
-        singupMethod: "google",
+        signupMethod: "google",
         password: null,
         isVerified: true,
         isActive: true,

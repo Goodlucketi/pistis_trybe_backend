@@ -5,6 +5,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 import { globalErrorHandler } from "./middlewares/error_handlers";
 import { pistisTribeRouterV1 } from "./routers";
 import { generalAuthFunction } from "./middlewares/authorization";
@@ -24,6 +25,7 @@ function createApp() {
     origin: "*",
     allowedHeaders: ["Content-Type", "Authorization", "X-Refresh-Auth"],
     exposedHeaders: ["X-Refresh-Auth", "x-access-token", "verif-hash"],
+    credentials: true,
   };
 
   app.use(cors(corsOptions));
@@ -32,6 +34,28 @@ function createApp() {
   app.use(express.json());
   app.use(cookieParser());
 
+
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: "error", message: "Too many requests, please slow down." },
+  });
+
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: "error", message: "Too many auth attempts. Try again in 15 minutes." },
+  });
+
+  app.use(globalLimiter);
+  app.use("/v1/auth/login", authLimiter);
+  app.use("/v1/auth/register", authLimiter);
+  app.use("/v1/auth/forgot-password", authLimiter);
+  app.use("/v1/auth/reset-password", authLimiter);
   app.get("/", (_request: Request, response: Response) => {
     response.send(health_check_html);
   });

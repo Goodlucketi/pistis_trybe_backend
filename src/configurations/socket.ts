@@ -10,6 +10,9 @@ interface AuthenticatedSocket extends Socket {
   user?: { userId: string; email: string; role: string };
 }
 
+// FIX: Track online presence — userId -> Set of socket IDs
+const onlineUsers = new Map<string, Set<string>>();
+
 export const initSocket = (server: http.Server) => {
   io = new Server(server, {
     cors: { origin: "*", methods: ["GET", "POST"] },
@@ -36,6 +39,14 @@ export const initSocket = (server: http.Server) => {
   io.on("connection", (socket: AuthenticatedSocket) => {
     const userId = socket.user!.userId;
 
+    // Track online presence
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+    }
+    onlineUsers.get(userId)!.add(socket.id);
+    if (onlineUsers.get(userId)!.size === 1) {
+      socket.broadcast.emit("user:online", { userId });
+    }
     // Join personal room (for DMs and notifications)
     socket.join(`user:${userId}`);
 
@@ -162,7 +173,14 @@ export const initSocket = (server: http.Server) => {
     });
 
     socket.on("disconnect", () => {
-      io.emit("user:offline", { userId });
+      const userSockets = onlineUsers.get(userId);
+      if (userSockets) {
+        userSockets.delete(socket.id);
+        if (userSockets.size === 0) {
+          onlineUsers.delete(userId);
+          io.emit("user:offline", { userId });
+        }
+      }
     });
   });
 
@@ -173,3 +191,6 @@ export const getIO = () => {
   if (!io) throw new Error("Socket.IO not initialized");
   return io;
 };
+
+export const isUserOnline = (userId: string): boolean =>
+  onlineUsers.has(userId) && onlineUsers.get(userId)!.size > 0;

@@ -121,71 +121,44 @@ export const getMessagesService = withServiceErrorHandling(
   }
 );
 
+/**
+ * FIX: HTTP sendMessage is now only used for FILE uploads.
+ * Text-only messages are sent via the socket (which saves to DB and broadcasts).
+ * This prevents the duplicate-save bug where both socket and HTTP wrote the same text message.
+ *
+ * The endpoint still supports text+file together (e.g. caption on an image),
+ * but the frontend should NOT call this endpoint for text-only messages.
+ */
 export const sendMessageService = withServiceErrorHandling(
-  async ({
-    chatId,
-    userId,
-    body,
-    mediaBuffer,
-    replyTo,
-  }: {
-    chatId: string;
-    userId: string;
-    body: string;
-    mediaBuffer?: Buffer;
-    replyTo?: string;
-  }) => {
+  async ({ chatId, userId, body, mediaBuffer, replyTo }: { chatId: string; userId: string; body: string; mediaBuffer?: Buffer; replyTo?: string }) => {
     const chat = await Chat.findOne({ _id: chatId, participants: userId });
     if (!chat) throw createError("Chat not found or access denied", StatusCodes.NotFound);
 
     let mediaUrl: string | null = null;
     if (mediaBuffer) {
       const { uploadToCloudinary } = await import("../../configurations/cloudinary");
-      const result = await uploadToCloudinary(mediaBuffer, "pistis_trybe/messages", {
-        resource_type: "auto",
-      });
+      const result = await uploadToCloudinary(mediaBuffer, "pistis_trybe/messages", { resource_type: "auto" });
       mediaUrl = result.secure_url;
     }
 
-    const message = await ChatMessage.create({
-      chatId,
-      senderId: userId,
-      body: body || "",
-      mediaUrl,
-      replyTo: replyTo || null,
-    });
-
-    // Update chat's lastMessage
-    await Chat.findByIdAndUpdate(chatId, {
-      lastMessageAt: new Date(),
-      lastMessage: {
-        text: body || (mediaUrl ? "📎 Attachment" : ""),
-        senderId: userId,
-        timestamp: new Date(),
-      },
-    });
+    const message = await ChatMessage.create({ chatId, senderId: userId, body: body || "", mediaUrl, replyTo: replyTo || null });
+    await Chat.findByIdAndUpdate(chatId, { lastMessageAt: new Date(), lastMessage: { text: body || (mediaUrl ? "📎 Attachment" : ""), senderId: userId, timestamp: new Date() } });
 
     const populated = await message.populate("senderId", "_id fullName avatarUrl");
 
-    // Emit socket notification to all participants so receivers get real-time update
+    // Broadcast via socket so other participants receive it in real time
     try {
       const { getIO } = await import("../../configurations/socket");
       const io = getIO();
 
-      // Broadcast to conversation room (participants who are viewing it)
       io.to(`conversation:${chatId}`).emit("receive_message", populated.toObject());
-
-      // Notify other participants via personal room (for those not in the room)
-      chat.participants.forEach((participantId) => {
-        if (participantId.toString() !== userId.toString()) {
-          io.to(`user:${participantId}`).emit("new_message_notification", {
-            conversationId: chatId,
-            message: populated.toObject(),
-          });
+      
+      chat.participants.forEach((pid) => {
+        if (pid.toString() !== userId) {
+          io.to(`user:${pid}`).emit("new_message_notification", { conversationId: chatId, message: populated.toObject() });
         }
       });
     } catch (socketErr) {
-      // Socket errors should not fail the HTTP response
       console.warn("Socket emit failed:", socketErr);
     }
 

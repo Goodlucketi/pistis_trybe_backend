@@ -23,16 +23,8 @@ const PostSchema = new Schema<IPost>(
   {
     authorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     groupId: { type: Schema.Types.ObjectId, ref: "Group", default: null },
-    type: {
-      type: String,
-      enum: ["post", "announcement", "event"],
-      default: "post",
-    },
-    visibility: {
-      type: String,
-      enum: ["public", "group", "private"],
-      default: "public",
-    },
+    type: { type: String, enum: ["post", "announcement", "event"], default: "post" },
+    visibility: { type: String, enum: ["public", "group", "private"], default: "public" },
     title: { type: String, default: null },
     body: { type: String, required: true },
     mediaUrls: [{ type: String }],
@@ -44,8 +36,10 @@ const PostSchema = new Schema<IPost>(
   { timestamps: true }
 );
 
-PostSchema.index({ visibility: 1, createdAt: -1 });
-PostSchema.index({ groupId: 1, createdAt: -1 });
-PostSchema.index({ authorId: 1, createdAt: -1 });
+// FIX: Compound indexes for common feed query patterns
+PostSchema.index({ isDeleted: 1, visibility: 1, groupId: 1, createdAt: -1 }); // main feed
+PostSchema.index({ authorId: 1, isDeleted: 1, createdAt: -1 });               // profile posts
+PostSchema.index({ groupId: 1, isDeleted: 1, createdAt: -1 });                 // group feed
+PostSchema.index({ hashtags: 1, isDeleted: 1 });                               // hashtag search
 
 export const Post = model<IPost>("Post", PostSchema);

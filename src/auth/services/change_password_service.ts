@@ -10,10 +10,10 @@ const changePasswordService = withServiceErrorHandling(
     currentPassword: string;
     newPassword: string;
   }) => {
-    const user = await User.findById(userId).select("password singupMethod");
+    const user = await User.findById(userId).select("password signupMethod");
     if (!user) throw createError("User not found", StatusCodes.NotFound);
 
-    if (user.singupMethod !== "direct") {
+    if (user.signupMethod !== "direct") {
       throw createError("Password change not available for social login accounts", StatusCodes.BadRequest);
     }
 

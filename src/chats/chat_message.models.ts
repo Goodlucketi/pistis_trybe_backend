@@ -32,6 +32,9 @@ const ChatMessageSchema = new Schema<IChatMessage>(
   { timestamps: true }
 );
 
+// FIX: Compound indexes for efficient message lookups
 ChatMessageSchema.index({ chatId: 1, createdAt: -1 });
+ChatMessageSchema.index({ chatId: 1, isDeleted: 1, createdAt: -1 });
+ChatMessageSchema.index({ chatId: 1, senderId: 1, isRead: 1 }); // unread count queries
 
 export const ChatMessage = model<IChatMessage>("ChatMessage", ChatMessageSchema);
