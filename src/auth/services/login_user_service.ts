@@ -41,7 +41,8 @@ const loginUserService = withServiceErrorHandling(
 
     if (user.signupMethod !== "direct") {
       throw createError(
-        AuthResponses.DIFFERENT_SIGNUP_METHOD,
+        // AuthResponses.DIFFERENT_SIGNUP_METHOD,
+        `This account uses ${user.signupMethod} login. Please continue with ${user.signupMethod}.`,
         StatusCodes.Forbidden,
       );
     }
