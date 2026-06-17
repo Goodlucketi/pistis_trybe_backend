@@ -15,7 +15,7 @@ export const getFeedService = withServiceErrorHandling(
     const skip = (page - 1) * limit;
     let query: Record<string, any> = { isDeleted: false, visibility: "public", groupId: null };
     if (type === "following") {
-      const follows = await Follow.find({ followerId: userId }).lean();
+      const follows = await Follow.find({ followerId: new Types.ObjectId(userId) }).lean();
       const ids = follows.map((f) => f.followingId);
       ids.push(new Types.ObjectId(userId));
       query.authorId = { $in: ids };
