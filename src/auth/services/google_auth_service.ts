@@ -79,6 +79,7 @@ export const googleAuthService = withServiceErrorHandling(
 
     return responseHandler("Google authentication successful", StatusCodes.OK, {
       accessToken,
+      refreshToken,
       user: cleanUser,
     });
   }
