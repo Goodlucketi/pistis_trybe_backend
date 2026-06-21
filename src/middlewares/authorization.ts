@@ -14,7 +14,7 @@ const EXCLUDED_ENDPOINTS: IExcludedEndpoint[] = [
   { method: "POST", path: "/v1/auth/login" },
   { method: "POST", path: "/v1/auth/register" },
   { method: "POST", path: "/v1/auth/refresh-token" },
-    { method: "POST", path: "/v1/auth/google" },  
+  { method: "POST", path: "/v1/auth/google" },  
   { method: "POST", path: "/v1/auth/forgot-password" },
   { method: "POST", path: "/v1/auth/reset-password" }, 
 ];
@@ -30,7 +30,7 @@ const PROTECTED_PREFIXES: string[] = [
   "/v1/notifications",
   "/v1/comments",
   "/v1/feeds",
-  "v1/admin",
+  "/v1/admin",
 ];
 
 export const generalAuthFunction = async (
