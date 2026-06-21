@@ -7,6 +7,7 @@ import chatsV1Router from "./chats/chats.routes";
 import notesv1Router from "./notes/notes.routes";
 import commentsV1Router from "./comments/comments.routes";
 import notificationsV1Router from "./notifications/notifications.routes";
+import adminV1Router from "./admin/admin.routes";
 
 const pistisTribeRouterV1 = Router();
 
@@ -18,5 +19,6 @@ pistisTribeRouterV1.use(chatsV1Router);
 pistisTribeRouterV1.use(notesv1Router);
 pistisTribeRouterV1.use(commentsV1Router);
 pistisTribeRouterV1.use(notificationsV1Router);
+pistisTribeRouterV1.use(adminV1Router);
 
 export { pistisTribeRouterV1 };
