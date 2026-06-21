@@ -31,6 +31,7 @@ const PROTECTED_PREFIXES: string[] = [
   "/v1/comments",
   "/v1/feeds",
   "/v1/admin",
+  "/v1/devotionals",
 ];
 
 export const generalAuthFunction = async (
