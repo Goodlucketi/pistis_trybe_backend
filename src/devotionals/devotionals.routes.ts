@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { requireAdmin } from "../../middlewares/requireAdmin";
+import { requireAdmin } from "../middlewares/requireAdmin";
 import {
   getTodaysDevotional, getDevotionals, getDevotionalByDate,
   getAllDevotionalsAdmin, createDevotional, updateDevotional, deleteDevotional,
-} from "./devotionals.controller";
+} from "./controllers/devotionals.controller";
 
 const devotionalsRouter = Router();
 
