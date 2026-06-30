@@ -226,3 +226,34 @@ export const reactToMessageService = withServiceErrorHandling(
     });
   }
 );
+
+
+export const updateGroupChatService = withServiceErrorHandling(
+  async ({ chatId, userId, name, avatarBuffer }:
+    { chatId: string; userId: string; name?: string; avatarBuffer?: Buffer }) => {
+
+    const chat = await Chat.findOne({ _id: chatId, type: "group", participants: userId });
+    if (!chat) throw createError("Group chat not found or access denied", StatusCodes.NotFound);
+
+    const update: any = {};
+    if (name?.trim()) update.name = name.trim();
+
+    if (avatarBuffer) {
+      const { uploadToCloudinary } = await import("../../configurations/cloudinary");
+      const result = await uploadToCloudinary(avatarBuffer, "pistis_trybe/group_avatars", {
+        resource_type: "image",
+        transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
+      });
+      update.coverUrl = result.secure_url;
+    }
+
+    if (Object.keys(update).length === 0) {
+      throw createError("No valid fields to update", StatusCodes.BadRequest);
+    }
+
+    const updated = await Chat.findByIdAndUpdate(chatId, update, { new: true })
+      .populate("participants", "_id fullName avatarUrl email");
+
+    return responseHandler("Group updated", StatusCodes.OK, updated);
+  }
+);

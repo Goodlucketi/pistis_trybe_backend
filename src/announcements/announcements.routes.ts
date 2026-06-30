@@ -1,0 +1,19 @@
+import { Router } from "express";
+import multer from "multer";
+import { requireAdmin } from "../../middlewares/requireAdmin";
+import {
+  getAnnouncements, getAllAnnouncementsAdmin,
+  createAnnouncement, updateAnnouncement, deleteAnnouncement,
+} from "./announcements.controller";
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+const announcementsRouter = Router();
+
+announcementsRouter.get("/announcements", getAnnouncements);
+announcementsRouter.get("/admin/announcements", requireAdmin, getAllAnnouncementsAdmin);
+announcementsRouter.post("/admin/announcements", requireAdmin, upload.single("image"), createAnnouncement);
+announcementsRouter.patch("/admin/announcements/:id", requireAdmin, updateAnnouncement);
+announcementsRouter.delete("/admin/announcements/:id", requireAdmin, deleteAnnouncement);
+
+export default announcementsRouter;

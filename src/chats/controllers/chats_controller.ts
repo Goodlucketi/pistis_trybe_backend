@@ -9,6 +9,7 @@ import {
   sendMessageService,
   deleteMessageService,
   reactToMessageService,
+  updateGroupChatService
 } from "../services/chats_service";
 
 export const getChats = withControllerErrorHandling(async (req: Request, res: Response) => {
@@ -75,4 +76,15 @@ export const reactToMessage = withControllerErrorHandling(async (req: Request, r
   const { emoji } = req.body;
   const result = await reactToMessageService({ messageId: req.params.msgId, userId, emoji });
   return responseHandler(result.message, result.statusCode, result.data, res);
+});
+
+
+export const updateGroupChat = withControllerErrorHandling(async (req: Request, res: Response) => {
+  const result = await updateGroupChatService({
+    chatId: req.params.chatId,
+    userId: (req as any).user.userId,
+    name: req.body.name,
+    avatarBuffer: req.file?.buffer,
+  });
+  return res.status(result.statusCode).json(result);
 });
