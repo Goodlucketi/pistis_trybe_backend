@@ -25,10 +25,21 @@ export const startDirectChat = withControllerErrorHandling(async (req: Request, 
 });
 
 export const createGroupChat = withControllerErrorHandling(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.userId;
   const { name, participantIds } = req.body;
-  const result = await createGroupChatService({ userId, name, participantIds });
-  return responseHandler(result.message, result.statusCode, result.data, res);
+  if (!name) return res.status(400).json({ status: "error", message: "Group name is required" });
+
+  // participantIds may arrive as a JSON string when sent via multipart/form-data
+  const parsedParticipantIds = typeof participantIds === "string" 
+    ? JSON.parse(participantIds) 
+    : participantIds;
+
+  const result = await createGroupChatService({
+    userId: (req as any).user.userId,
+    name,
+    participantIds: parsedParticipantIds,
+    avatarBuffer: req.file?.buffer, // ← read uploaded avatar
+  });
+  return res.status(result.statusCode).json(result);
 });
 
 export const getMessages = withControllerErrorHandling(async (req: Request, res: Response) => {

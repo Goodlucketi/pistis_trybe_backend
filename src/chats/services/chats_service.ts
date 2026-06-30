@@ -56,27 +56,34 @@ export const getOrCreateDirectChatService = withServiceErrorHandling(
   }
 );
 
+
 export const createGroupChatService = withServiceErrorHandling(
   async ({
-    userId,
-    name,
-    participantIds,
+    userId, name, participantIds, avatarBuffer,
   }: {
-    userId: string;
-    name: string;
-    participantIds: string[];
+    userId: string; name: string; participantIds: string[]; avatarBuffer?: Buffer;
   }) => {
     const allParticipants = Array.from(new Set([userId, ...participantIds]));
+
+    let coverUrl: string | null = null;
+    if (avatarBuffer) {
+      const { uploadToCloudinary } = await import("../../configurations/cloudinary");
+      const result = await uploadToCloudinary(avatarBuffer, "pistis_trybe/group_avatars", {
+        resource_type: "image",
+        transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
+      });
+      coverUrl = result.secure_url;
+    }
 
     const chat = await Chat.create({
       type: "group",
       name,
       participants: allParticipants,
       createdBy: userId,
+      coverUrl, // ← set on creation
     });
 
     const populated = await chat.populate("participants", "_id fullName avatarUrl email");
-
     return responseHandler("Group chat created", StatusCodes.Created, populated);
   }
 );
