@@ -18,7 +18,11 @@ export interface IChat extends Document {
 const ChatSchema = new Schema<IChat>(
   {
     type: { type: String, enum: ["direct", "group"], default: "direct" },
-    participants: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
+    participants: [{
+      user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      role: { type: String, enum: ['admin', 'member'], default: 'member' },
+      joinedAt: { type: Date, default: Date.now }
+    }],
     name: { type: String, default: null },
     coverUrl: { type: String, default: null },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
