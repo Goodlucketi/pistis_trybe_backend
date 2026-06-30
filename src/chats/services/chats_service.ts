@@ -63,13 +63,7 @@ export const createGroupChatService = withServiceErrorHandling(
   }: {
     userId: string; name: string; participantIds: string[]; avatarBuffer?: Buffer;
   }) => {
-    const allParticipants = [
-      { user: userId, role: "admin" }, // Creator is admin
-      ...Array.from(new Set(participantIds)).map(id => ({ 
-        user: id, 
-        role: "member" 
-      }))
-    ];;
+    const allParticipants = Array.from(new Set([userId, ...participantIds]));
 
     let coverUrl: string | null = null;
     if (avatarBuffer) {
@@ -89,24 +83,8 @@ export const createGroupChatService = withServiceErrorHandling(
       coverUrl, // ← set on creation
     });
 
-    const populated = await chat.findById(chat._id).populate({
-        path: "participants.user",
-        select: "_id fullName avatarUrl email"
-      })
-      .lean(); 
-
-      const transformed = {
-        ...populated,
-        participants: populated.participants.map(p => ({
-          id: p.user._id.toString(),
-          name: p.user.fullName,
-          avatar: p.user.avatarUrl,
-          email: p.user.email,
-          role: p.role, // ← role from Chat.participants subdoc
-          joinedAt: p.joinedAt
-        }))
-      };
-    return responseHandler("Group chat created", StatusCodes.Created, transformed);
+    const populated = await chat.populate("participants", "_id fullName avatarUrl email");
+    return responseHandler("Group chat created", StatusCodes.Created, populated);
   }
 );
 
@@ -248,6 +226,7 @@ export const reactToMessageService = withServiceErrorHandling(
     });
   }
 );
+
 
 
 export const updateGroupChatService = withServiceErrorHandling(
