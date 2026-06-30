@@ -3,7 +3,7 @@ import { withControllerErrorHandling } from "../../middlewares/error_handlers";
 import {
   getAnnouncementsService, getAllAnnouncementsAdminService,
   createAnnouncementService, updateAnnouncementService, deleteAnnouncementService,
-} from "./announcements.service";
+} from "../services/announcements.service";
 
 export const getAnnouncements = withControllerErrorHandling(async (req: Request, res: Response) => {
   const result = await getAnnouncementsService({

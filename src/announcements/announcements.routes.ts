@@ -1,10 +1,10 @@
 import { Router } from "express";
 import multer from "multer";
-import { requireAdmin } from "../../middlewares/requireAdmin";
+import { requireAdmin } from "../middlewares/requireAdmin";
 import {
   getAnnouncements, getAllAnnouncementsAdmin,
   createAnnouncement, updateAnnouncement, deleteAnnouncement,
-} from "./announcements.controller";
+} from "./controllers/announcements.controller";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 

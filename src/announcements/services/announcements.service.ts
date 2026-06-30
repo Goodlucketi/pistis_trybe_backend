@@ -1,6 +1,6 @@
 import { createError, withServiceErrorHandling } from "../../middlewares/error_handlers";
 import responseHandler from "../../middlewares/response_handler";
-import { Announcement } from "./announcements.model";
+import { Announcement } from "../announcements.model";
 import { Notification } from "../../notifications/notifications.models";
 import { User } from "../../users/users.models";
 import { StatusCodes } from "../../utilities/status_codes";
