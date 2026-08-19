@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IDevotional extends Document {
   topic: string;
@@ -8,7 +8,7 @@ export interface IDevotional extends Document {
   scriptureForMeditation: string;
   meditationReference: string;
   date: string;           // "YYYY-MM-DD" — one devotional per day
-  publishedBy: Schema.Types.ObjectId;
+  publishedBy: Types.ObjectId;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;

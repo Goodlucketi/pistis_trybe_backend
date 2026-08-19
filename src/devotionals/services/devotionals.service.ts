@@ -2,12 +2,13 @@ import { createError, withServiceErrorHandling } from "../../middlewares/error_h
 import responseHandler from "../../middlewares/response_handler";
 import { Devotional } from "../devotionals.model";
 import { StatusCodes } from "../../utilities/status_codes";
+import { Types } from "mongoose";
 
 // ── PUBLIC ────────────────────────────────────────────────────────────────
 
 /** Returns today's devotional. If none exists, returns the most recent one. */
 export const getTodaysDevotionalService = withServiceErrorHandling(async () => {
-  const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+  const today = new Date().toISOString().split("T")[0] as string; // "YYYY-MM-DD"
 
   let devotional = await Devotional.findOne({ date: today, isPublished: true })
     .populate("publishedBy", "_id fullName avatarUrl")
@@ -77,10 +78,11 @@ export const createDevotionalService = withServiceErrorHandling(
 
     const devotional = await Devotional.create({
       topic, bibleVerse, bibleVerseReference, exhortation,
-      scriptureForMeditation, meditationReference, date, publishedBy,
+      scriptureForMeditation, meditationReference, date,
+      publishedBy: new Types.ObjectId(publishedBy), // ← cast to ObjectId
     });
 
-    const populated = await devotional.populate("publishedBy", "_id fullName avatarUrl");
+    const populated = await (devotional as any).populate("publishedBy", "_id fullName avatarUrl");
     return responseHandler("Devotional created", StatusCodes.Created, populated);
   }
 );
