@@ -82,7 +82,7 @@ export const createDevotionalService = withServiceErrorHandling(
       publishedBy: new Types.ObjectId(publishedBy), // ← cast to ObjectId
     });
 
-    const populated = await (devotional as any).populate("publishedBy", "_id fullName avatarUrl");
+    const populated = await devotional.populate("publishedBy", "_id fullName avatarUrl");
     return responseHandler("Devotional created", StatusCodes.Created, populated);
   }
 );
