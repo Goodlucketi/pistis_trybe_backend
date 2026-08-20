@@ -27,7 +27,9 @@ import {
 // ==================== FEED ====================
 
 export const getFeed = withControllerErrorHandling(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.userId;
+  const user = (req as any).user;
+  const userId = user?.userId || user?.id || user?._id;
+  
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
   const type = (req.query.type as "forYou" | "following") || "forYou";
