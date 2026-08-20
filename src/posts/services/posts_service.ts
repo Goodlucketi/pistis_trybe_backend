@@ -31,16 +31,32 @@ export const getFeedService = withServiceErrorHandling(
 );
 
 export const createPostService = withServiceErrorHandling(
-  async ({ userId, body, title, hashtags, visibility = "public", mediaBuffers = [], groupId = null }: { userId: string; body: string; title?: string; hashtags?: string[]; visibility?: string; mediaBuffers?: Buffer[]; groupId?: string | null }) => {
+  async ({ userId, body, title, hashtags, visibility = "public", mediaBuffers = [], mediaMimetypes = [], groupId = null }: { userId: string; body: string; title?: string; hashtags?: string[]; visibility?: string; mediaBuffers?: Buffer[]; mediaMimetypes?: string[]; groupId?: string | null }) => {
     if (groupId) {
       const membership = await GroupMember.findOne({ groupId, userId });
       if (!membership) throw createError("Only members can post", StatusCodes.Forbidden);
     }
     const mediaUrls: string[] = [];
-    for (const buffer of mediaBuffers) {
-      const r = await uploadToCloudinary(buffer, "pistis_trybe/posts", { resource_type: "auto" });
-      mediaUrls.push(r.secure_url);
+    for (let i = 0; i < mediaBuffers.length; i++) {
+      const buffer = mediaBuffers[i]!;
+      const mimetype = mediaMimetypes[i] || "";
+      const isVideo = mimetype.startsWith("video/");
+
+      const result = await uploadToCloudinary(
+        buffer,
+        isVideo ? "pistis_trybe/videos" : "pistis_trybe/posts",
+        {
+          resource_type: "auto", // ← Cloudinary auto-detects image vs video
+          // For videos: generate a thumbnail automatically
+          ...(isVideo && {
+            eager: [{ width: 400, height: 300, crop: "fill", format: "jpg" }],
+            eager_async: true,
+          }),
+        }
+      );
+      mediaUrls.push(result.secure_url);
     }
+
     const post = await Post.create({ authorId: userId, groupId, body, title: title || null, hashtags: hashtags || [], visibility, mediaUrls, type: "post" });
     const populated = await post.populate("authorId", "_id fullName avatarUrl email");
     return responseHandler("Post created", StatusCodes.Created, populated);

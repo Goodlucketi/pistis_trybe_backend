@@ -49,6 +49,7 @@ export const createPost = withControllerErrorHandling(async (req: Request, res: 
     hashtags: hashtags ? JSON.parse(hashtags) : [],
     visibility: groupId ? "group" : (visibility || "public"), // <-- force "group" if groupId
     mediaBuffers: files.map((f) => f.buffer),
+    mediaMimetypes: files.map((f) => f.mimetype),
     groupId,
   });
   return responseHandler(result.message, result.statusCode, result.data, res);

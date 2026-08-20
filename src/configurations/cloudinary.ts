@@ -13,8 +13,11 @@ export const uploadToCloudinary = (
   options: Record<string, any> = {}
 ): Promise<any> => {
   return new Promise((resolve, reject) => {
+     // Detect if it's a video based on resource_type option or mimetype
+    const resourceType = options.resource_type || "auto"; // "auto" lets Cloudinary detect
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder, ...options },
+      { folder, resource_type: resourceType, ...options },
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
