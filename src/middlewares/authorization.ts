@@ -30,6 +30,7 @@ const PROTECTED_PREFIXES: string[] = [
   "/v1/notifications",
   "/v1/comments",
   "/v1/feeds",
+  "/v1/feed",
   "/v1/admin",
   "/v1/devotionals",
   "/v1/announcements",
