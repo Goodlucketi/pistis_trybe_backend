@@ -14,16 +14,22 @@ export const getFeedService = withServiceErrorHandling(
   async ({ page = 1, limit = 20, type = "forYou", userId }: { page?: number; limit?: number; type?: "forYou" | "following"; userId: string }) => {
     const skip = (page - 1) * limit;
     let query: Record<string, any> = { isDeleted: false, visibility: "public", groupId: null };
+
     if (type === "following") {
       const follows = await Follow.find({ followerId: new Types.ObjectId(userId) }).lean();
+      console.log("DEBUG FOLLOW DOCS:", follows); // <-- add this
+      console.log("DEBUG USERID:", userId);
       const ids = follows.map((f) => f.followingId);
       ids.push(new Types.ObjectId(userId));
+      console.log("DEBUG IDS TO QUERY:", ids);
       query.authorId = { $in: ids };
     }
+    
     const posts = await Post.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).populate("authorId", "_id fullName avatarUrl email").lean();
     const total = await Post.countDocuments(query);
     const postIds = posts.map((p) => p._id);
     const ccs = await Comment.aggregate([{ $match: { postId: { $in: postIds }, isDeleted: false } }, { $group: { _id: "$postId", count: { $sum: 1 } } }]);
+
     const ccMap = new Map(ccs.map((c) => [c._id.toString(), c.count]));
     const enriched = posts.map((p: any) => ({ ...p, commentsCount: ccMap.get(p._id.toString()) || 0 }));
     return responseHandler("Feed fetched", StatusCodes.OK, { posts: enriched, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
