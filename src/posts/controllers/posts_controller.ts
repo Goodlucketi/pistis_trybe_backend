@@ -27,10 +27,18 @@ import {
 // ==================== FEED ====================
 
 export const getFeed = withControllerErrorHandling(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.userId;
+  const user = (req as any).user;
+  const userId = user?.userId || user?.id || user?._id;
+
+  if (!userId) {
+    console.error("FEED ERROR: req.user is", user);
+    return res.status(401).json({ success: false, message: "Unauthorized - userId missing from token" });
+  }
+
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 20;
   const type = (req.query.type as "forYou" | "following") || "forYou";
+  
   const result = await getFeedService({ page, limit, type, userId });
   return responseHandler(result.message, result.statusCode, result.data, res);
 });
