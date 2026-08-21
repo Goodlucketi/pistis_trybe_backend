@@ -21,7 +21,8 @@ import {
   kickMemberService, 
   promoteMemberService, 
   updateGroupService, 
-  deleteGroupService
+  deleteGroupService,
+  resharePostService,
 } from "../services/posts_service";
 
 // ==================== FEED ====================
@@ -54,6 +55,12 @@ export const createPost = withControllerErrorHandling(async (req: Request, res: 
     mediaMimetypes: files.map((f) => f.mimetype),
     groupId,
   });
+  return responseHandler(result.message, result.statusCode, result.data, res);
+});
+
+export const resharePost = withControllerErrorHandling(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.userId;
+  const result = await resharePostService({ postId: req.params.id, userId });
   return responseHandler(result.message, result.statusCode, result.data, res);
 });
 

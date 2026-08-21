@@ -69,6 +69,31 @@ export const createPostService = withServiceErrorHandling(
   }
 );
 
+export const resharePostService = withServiceErrorHandling(async ({ postId, userId, body, title, hashtags, visibility = "public", mediaUrls, groupId = null}) => {
+  const original = await Post.findOne({ _id: postId, isDeleted: false });
+  if (!original) throw createError("Post not found", 404);
+
+  // If resharing a reshare, get the root original
+  const rootId = original.originalPostId || original._id;
+
+  const reshare = await Post.create({
+    authorId: userId,
+    originalPostId: rootId,
+    isReshare: true,
+    body: "",
+    visibility: "public",
+    type: "post",
+  });
+  // IMPORTANT: Update getFeedService to populate originalPost
+  const post = await Post.create({ authorId: userId, groupId, body, title: title || null, hashtags: hashtags || [], visibility, mediaUrls, type: "post" });
+  
+  const populated = await post.populate("authorId", "_id fullName avatarUrl email");
+  return responseHandler("Reshared", 201, await reshare.populate([
+    { path: "authorId", select: "fullName avatarUrl" },
+    { path: "originalPostId", populate: { path: "authorId", select: "fullName avatarUrl" } }
+  ]));
+});
+
 export const toggleLikeService = withServiceErrorHandling(
   async ({ postId, userId }: { postId: string; userId: string }) => {
     const post = await Post.findOne({ _id: postId, isDeleted: false });

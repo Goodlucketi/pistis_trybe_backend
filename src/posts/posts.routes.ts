@@ -2,7 +2,7 @@ import { Router } from "express";
 import { uploadSingle, uploadMultiple } from "../middlewares/upload";
 import {
   // Feed + Posts
-  getFeed, createPost, toggleLike, getUserPosts, editPost, deletePost,
+  getFeed, createPost, toggleLike, getUserPosts, editPost, deletePost, resharePost,
   // Group Posts
   getGroupPosts,
   // Groups
@@ -20,6 +20,7 @@ postsV1Router.post("/posts/:id/like", toggleLike);
 postsV1Router.patch("/posts/:id", editPost);
 postsV1Router.delete("/posts/:id", deletePost);
 postsV1Router.get("/users/:userId/posts", getUserPosts);
+postsV1Router.post("/posts/:id/reshare", resharePost);
 
 // ==================== GROUPS ====================
 postsV1Router.get("/groups", getGroups);

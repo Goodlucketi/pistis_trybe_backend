@@ -17,6 +17,8 @@ export interface IPost extends Document {
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+  originalPostId?: Types.ObjectId | null;
+  isReshare?: boolean;
 }
 
 const PostSchema = new Schema<IPost>(
@@ -32,6 +34,8 @@ const PostSchema = new Schema<IPost>(
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     eventDate: { type: Date, default: null },
     isDeleted: { type: Boolean, default: false },
+    originalPostId: { type: Schema.Types.ObjectId, ref: "Post", default: null },
+    isReshare: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
