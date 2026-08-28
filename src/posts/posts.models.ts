@@ -28,7 +28,13 @@ const PostSchema = new Schema<IPost>(
     type: { type: String, enum: ["post", "announcement", "event"], default: "post" },
     visibility: { type: String, enum: ["public", "group", "private"], default: "public" },
     title: { type: String, default: null },
-    body: { type: String, required: true },
+    body: { 
+      type: String, 
+      required: function() {
+        // Only require body if it's not a reshare
+        return !this.isReshare;
+      }
+    },
     mediaUrls: [{ type: String }],
     hashtags: [{ type: String }],
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
