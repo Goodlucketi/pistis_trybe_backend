@@ -29,14 +29,7 @@ export const getFeedService = withServiceErrorHandling(
     const total = await Post.countDocuments(query);
     const postIds = posts.map((p) => p._id);
     const ccs = await Comment.aggregate([{ $match: { postId: { $in: postIds }, isDeleted: false } }, { $group: { _id: "$postId", count: { $sum: 1 } } }]);
-    
-    const populated = await reshare.populate([
-      { path: "authorId", select: "fullName avatarUrl" },
-      {
-        path: "originalPostId",
-        populate: { path: "authorId", select: "fullName avatarUrl" },
-      },
-    ]);
+
     const ccMap = new Map(ccs.map((c) => [c._id.toString(), c.count]));
     const enriched = posts.map((p: any) => ({ ...p, commentsCount: ccMap.get(p._id.toString()) || 0 }));
     return responseHandler("Feed fetched", StatusCodes.OK, { posts: enriched, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
