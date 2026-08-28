@@ -85,14 +85,18 @@ export const resharePostService = withServiceErrorHandling(async ({ postId, user
     type: "post",
   });
   // IMPORTANT: Update getFeedService to populate originalPost
-  const post = await Post.create({ authorId: userId, groupId, body, title: title || null, hashtags: hashtags || [], visibility, mediaUrls, type: "post" });
+  // const post = await Post.create({ authorId: userId, groupId, body, title: title || null, hashtags: hashtags || [], visibility, mediaUrls, type: "post" });
   
-  const populated = await post.populate("authorId", "_id fullName avatarUrl email");
-  return responseHandler("Reshared", 201, await reshare.populate([
-    { path: "authorId", select: "fullName avatarUrl" },
-    { path: "originalPostId", populate: { path: "authorId", select: "fullName avatarUrl" } }
-  ]));
+  const populated = await reshare.populate([
+      { path: "authorId", select: "fullName avatarUrl" },
+      {
+        path: "originalPostId",
+        populate: { path: "authorId", select: "fullName avatarUrl" },
+      },
+    ]);
+  return responseHandler("Reshared", 201, populated);
 });
+
 
 export const toggleLikeService = withServiceErrorHandling(
   async ({ postId, userId }: { postId: string; userId: string }) => {
