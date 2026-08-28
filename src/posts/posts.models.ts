@@ -30,8 +30,8 @@ const PostSchema = new Schema<IPost>(
     title: { type: String, default: null },
     body: { 
       type: String, 
+      // @ts-ignore
       required: function() {
-        // Only require body if it's not a reshare
         return !this.isReshare;
       }
     },
