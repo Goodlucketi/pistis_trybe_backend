@@ -60,7 +60,14 @@ export const createPost = withControllerErrorHandling(async (req: Request, res: 
 
 export const resharePost = withControllerErrorHandling(async (req: Request, res: Response) => {
   const userId = (req as any).user?.userId;
-  const result = await resharePostService({ postId: req.params.id, userId });
+  const caption = req.body?.caption || "";
+
+  const result = await resharePostService({
+    postId: req.params.id,
+    userId,
+    caption,
+  });
+
   return responseHandler(result.message, result.statusCode, result.data, res);
 });
 

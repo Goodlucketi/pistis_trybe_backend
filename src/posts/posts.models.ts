@@ -10,6 +10,7 @@ export interface IPost extends Document {
   visibility: FeedVisibility;
   title: string | null;
   body: string;
+  caption?: string;
   mediaUrls: string[];
   hashtags: string[];
   likes: Types.ObjectId[];
@@ -18,7 +19,7 @@ export interface IPost extends Document {
   createdAt: Date;
   updatedAt: Date;
   originalPostId?: Types.ObjectId | null;
-  isReshare?: boolean;
+  isReshare: boolean;
 }
 
 const PostSchema = new Schema<IPost>(
@@ -30,11 +31,11 @@ const PostSchema = new Schema<IPost>(
     title: { type: String, default: null },
     body: { 
       type: String, 
-      // @ts-ignore
       required: function() {
-        return !this.isReshare;
+        return !(this as any).isReshare;
       }
     },
+    caption: { type: String, default: "" },
     mediaUrls: [{ type: String }],
     hashtags: [{ type: String }],
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],

@@ -78,33 +78,33 @@ export const createPostService = withServiceErrorHandling(
   }
 );
 
-export const resharePostService = withServiceErrorHandling(async ({ postId, userId, body, title, hashtags, visibility = "public", mediaUrls, groupId = null}) => {
-  const original = await Post.findOne({ _id: postId, isDeleted: false });
-  if (!original) throw createError("Post not found", 404);
+export const resharePostService = withServiceErrorHandling(
+  async ({ postId, userId, caption = "" }: { postId: string; userId: string; caption?: string }) => {
+    const original = await Post.findOne({ _id: postId, isDeleted: false });
+    if (!original) throw createError("Post not found", 404);
 
-  // If resharing a reshare, get the root original
-  const rootId = original.originalPostId || original._id;
+    const rootId = original.originalPostId || original._id;
 
-  const reshare = await Post.create({
-    authorId: userId,
-    originalPostId: rootId,
-    isReshare: true,
-    body: "",
-    visibility: "public",
-    type: "post",
-  });
-  // IMPORTANT: Update getFeedService to populate originalPost
-  // const post = await Post.create({ authorId: userId, groupId, body, title: title || null, hashtags: hashtags || [], visibility, mediaUrls, type: "post" });
-  
-  const populated = await reshare.populate([
+    const reshare = await Post.create({
+      authorId: userId,
+      originalPostId: rootId,
+      isReshare: true,
+      body: caption?.trim() || "",
+      visibility: "public",
+      type: "post",
+    });
+
+    const populated = await reshare.populate([
       { path: "authorId", select: "fullName avatarUrl" },
       {
         path: "originalPostId",
         populate: { path: "authorId", select: "fullName avatarUrl" },
       },
     ]);
-  return responseHandler("Reshared", 201, populated);
-});
+
+    return responseHandler("Reshared", 201, populated);
+  }
+);
 
 
 export const toggleLikeService = withServiceErrorHandling(
