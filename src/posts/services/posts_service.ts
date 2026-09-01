@@ -25,7 +25,16 @@ export const getFeedService = withServiceErrorHandling(
       query.authorId = { $in: ids };
     }
     
-    const posts = await Post.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).populate("authorId", "_id fullName avatarUrl email").lean();
+    const posts = await Post.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate("authorId", "_id fullName avatarUrl email")
+    .populate({
+      path: "originalPostId",
+      populate: { path: "authorId", select: "_id fullName avatarUrl email" }
+    })
+    .lean();
     const total = await Post.countDocuments(query);
     const postIds = posts.map((p) => p._id);
     const ccs = await Comment.aggregate([{ $match: { postId: { $in: postIds }, isDeleted: false } }, { $group: { _id: "$postId", count: { $sum: 1 } } }]);
