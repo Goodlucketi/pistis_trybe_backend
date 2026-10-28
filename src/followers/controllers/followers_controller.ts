@@ -13,13 +13,13 @@ export const toggleFollow = withControllerErrorHandling(async (req: Request, res
 export const getFollowers = withControllerErrorHandling(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 30;
-  const result = await getFollowersService({ userId: req.params.id, page, limit });
+  const result = await getFollowersService({ viewerId: (req as any).user?.userId, userId: req.params.id as string, page, limit });
   return responseHandler(result.message, result.statusCode, result.data, res);
 });
 
 export const getFollowing = withControllerErrorHandling(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 30;
-  const result = await getFollowingService({ userId: req.params.id, page, limit });
+  const result = await getFollowingService({ viewerId: (req as any).user?.userId, userId: req.params.id as string, page, limit });
   return responseHandler(result.message, result.statusCode, result.data, res);
 });
