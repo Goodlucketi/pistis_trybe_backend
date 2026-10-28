@@ -90,6 +90,50 @@ Content-Type: application/json
 }
 ```
 
+Registering as a regular user sends a 6-digit code to the email address and returns `{ email, requiresVerification: true }`. The account cannot log in until the code is confirmed.
+
+### Verify email
+
+```http
+POST /v1/auth/verify-email
+Content-Type: application/json
+
+{ "email": "john@example.com", "otp": "123456" }
+```
+
+Returns `accessToken` and `user` on success. Codes expire after 10 minutes and are locked after 5 wrong attempts.
+
+```http
+POST /v1/auth/resend-otp
+Content-Type: application/json
+
+{ "email": "john@example.com" }
+```
+
+Resends are limited to one per 60 seconds.
+
+### Email (ZeptoMail)
+
+Set these in `.env`:
+
+```
+ZEPTOMAIL_TOKEN=<Send Mail token>
+ZEPTOMAIL_FROM_ADDRESS=noreply@your-verified-domain.com
+ZEPTOMAIL_FROM_NAME=Pistis Trybe
+ZEPTOMAIL_API_URL=https://api.zeptomail.com/v1.1/email
+CLIENT_URL=https://your-frontend-domain
+```
+
+`ZEPTOMAIL_API_URL` only needs changing for non-US data centres (e.g. `https://api.zeptomail.eu/v1.1/email`). When `ZEPTOMAIL_TOKEN` is not set outside production, emails are printed to the server console instead of being sent. In production a missing token makes sending fail.
+
+### Verify existing users (one-time)
+
+```bash
+npm run migrate:verify-existing
+```
+
+Marks every direct-signup user created before OTP verification existed as verified.
+
 ### Login
 
 ```http
@@ -102,7 +146,7 @@ Content-Type: application/json
 }
 ```
 
-Response includes a `token` (access token) and the user object.
+Response includes an `accessToken` and the user object. Unverified users get a `403` with `specialCodeMessage: ["EMAIL_NOT_VERIFIED"]`.
 
 ### Access Protected Routes
 

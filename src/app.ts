@@ -54,6 +54,8 @@ function createApp() {
   app.use(globalLimiter);
   app.use("/v1/auth/login", authLimiter);
   app.use("/v1/auth/register", authLimiter);
+  app.use("/v1/auth/verify-email", authLimiter);
+  app.use("/v1/auth/resend-otp", authLimiter);
   app.use("/v1/auth/forgot-password", authLimiter);
   app.use("/v1/auth/reset-password", authLimiter);
   app.get("/", (_request: Request, response: Response) => {

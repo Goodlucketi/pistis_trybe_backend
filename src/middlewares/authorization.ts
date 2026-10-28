@@ -12,6 +12,8 @@ interface IExcludedEndpoint {
 
 const EXCLUDED_ENDPOINTS: IExcludedEndpoint[] = [
   { method: "POST", path: "/v1/auth/login" },
+  { method: "POST", path: "/v1/auth/verify-email" },
+  { method: "POST", path: "/v1/auth/resend-otp" },
   { method: "POST", path: "/v1/auth/register" },
   { method: "POST", path: "/v1/auth/refresh-token" },
   { method: "POST", path: "/v1/auth/google" },  

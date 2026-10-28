@@ -56,6 +56,14 @@ const loginUserService = withServiceErrorHandling(
       );
     }
 
+    if (!user.isVerified && user.role === "user") {
+      throw createError(
+        AuthResponses.EMAIL_NOT_VERIFIED,
+        StatusCodes.Forbidden,
+        ["EMAIL_NOT_VERIFIED"],
+      );
+    }
+
     const tokenData = {
       userId: user._id,
       email: user.email,

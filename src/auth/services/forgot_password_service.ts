@@ -3,6 +3,8 @@ import { withServiceErrorHandling } from "../../middlewares/error_handlers";
 import responseHandler from "../../middlewares/response_handler";
 import { User } from "../../users/users.models";
 import { StatusCodes } from "../../utilities/status_codes";
+import { sendMail } from "../../utilities/mailer";
+import { resetPasswordEmail } from "../../utilities/email_templates";
 
 const forgotPasswordService = withServiceErrorHandling(
   async ({ email }: { email: string }) => {
@@ -23,11 +25,11 @@ const forgotPasswordService = withServiceErrorHandling(
     user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await user.save();
 
-    // TODO: Send email with reset link to user.email
-    // Link format: https://yourapp.com/reset-password?token=<rawToken>&email=<email>
-    // Until email provider is configured, return token in dev only
-    const isDev = process.env.NODE_ENV === "development";
-    return responseHandler(genericMsg, StatusCodes.OK, isDev ? { resetToken: rawToken } : null);
+    const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/$/, "");
+    const link = `${clientUrl}/reset-password?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
+    await sendMail({ to: user.email, toName: user.fullName || undefined, ...resetPasswordEmail(link) });
+
+    return responseHandler(genericMsg, StatusCodes.OK, null);
   }
 );
 

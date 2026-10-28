@@ -7,6 +7,7 @@ import { User } from "../../users/users.models";
 import { hashPassword } from "../../utilities/helper_functions";
 import { StatusCodes } from "../../utilities/status_codes";
 import { AuthResponses } from "../responses";
+import { issueEmailOtp } from "./email_otp_service";
 
 interface IRegisterAttributes {
   email: string;
@@ -19,15 +20,27 @@ const registerUserService = withServiceErrorHandling(
     const { email, password, role } = registerPayload;
     const normalizedEmail = email.trim().toLowerCase();
 
-    const userExists = await User.findOne({ email: normalizedEmail }, [
-      "_id",
-      "email",
-    ]);
+    const userExists: any = await User.findOne({ email: normalizedEmail });
 
     if (userExists) {
-      throw createError(
-        AuthResponses.EMAIL_EXISTS_LOGIN,
-        StatusCodes.BadRequest,
+      const pendingVerification =
+        !userExists.isVerified && userExists.signupMethod === "direct" && !userExists.isBlocked;
+
+      if (!pendingVerification) {
+        throw createError(
+          AuthResponses.EMAIL_EXISTS_LOGIN,
+          StatusCodes.BadRequest,
+        );
+      }
+
+      userExists.password = await hashPassword(password.trim());
+      await userExists.save();
+      await issueEmailOtp(userExists);
+
+      return responseHandler(
+        AuthResponses.VERIFICATION_CODE_SENT,
+        StatusCodes.Created,
+        { email: normalizedEmail, requiresVerification: true },
       );
     }
 
@@ -52,12 +65,25 @@ const registerUserService = withServiceErrorHandling(
       );
     }
 
+    if (createUserPayload.isVerified) {
+      return responseHandler(
+        AuthResponses.ADMIN_REGISTRATION_SUCCESSFUL,
+        StatusCodes.Created,
+        { email: createUserPayload.email, requiresVerification: false },
+      );
+    }
+
+    try {
+      await issueEmailOtp(newUser);
+    } catch (error) {
+      await User.deleteOne({ _id: newUser._id });
+      throw error;
+    }
+
     return responseHandler(
-        role === "super_admin" || role === "admin"
-          ? AuthResponses.ADMIN_REGISTRATION_SUCCESSFUL
-          : AuthResponses.USER_REGSTRATION_SUCCESSFUL,
+      AuthResponses.VERIFICATION_CODE_SENT,
       StatusCodes.Created,
-      createUserPayload.email,
+      { email: createUserPayload.email, requiresVerification: true },
     );
   },
 );

@@ -37,3 +37,15 @@ export const loginUserSchema = Joi.object({
     "string.min": "Password must be at least 8 characters long",
   }),
 });
+
+export const verifyEmailSchema = Joi.object({
+  email: Joi.string().trim().email({ tlds: { allow: false } }).required(),
+  otp: Joi.string().trim().pattern(/^\d{6}$/).required().messages({
+    "string.pattern.base": "Verification code must be 6 digits",
+    "string.empty": "Verification code is required",
+  }),
+});
+
+export const resendOtpSchema = Joi.object({
+  email: Joi.string().trim().email({ tlds: { allow: false } }).required(),
+});

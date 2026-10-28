@@ -9,7 +9,8 @@
     "test": "cross-env NODE_ENV=development --max-old-space-size=4096 jest -i --colors --verbose --detectOpenHandles --coverage --forceExit --testTimeout=500000 __tests__",
     "test:watch": "cross-env NODE_ENV=development jest --watch",
     "start": "tsx src/server.ts",
-    "dev": "nodemon --exec ts-node src/server.ts"
+    "dev": "nodemon --exec ts-node src/server.ts",
+    "migrate:verify-existing": "tsx src/scripts/verify_existing_users.ts"
   },
   "keywords": [],
   "author": "",

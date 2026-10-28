@@ -7,6 +7,9 @@ export const AuthResponses = {
     "User account successfully registered. Welcome to Pistis Trybe!!",
   ADMIN_REGISTRATION_SUCCESSFUL:
     "Admin account successfully registered. Welcome to Pistis Trybe!!",
+  VERIFICATION_CODE_SENT:
+    "We sent a 6-digit verification code to your email.",
+  EMAIL_NOT_VERIFIED: "Please verify your email to continue.",
   USER_NOT_FOUND: "This account does not exist in our database",
   BLOCKED_ACCOUNT: "This account is blocked, please contact the admin",
   DIFFERENT_SIGNUP_METHOD: "You may have used a different signup method",
