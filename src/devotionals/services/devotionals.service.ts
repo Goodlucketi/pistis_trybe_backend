@@ -1,6 +1,6 @@
 import { createError, withServiceErrorHandling } from "../../middlewares/error_handlers";
 import responseHandler from "../../middlewares/response_handler";
-import { Devotional } from "../devotionals.model";
+import { Devotional, IDevotionalSection } from "../devotionals.model";
 import { StatusCodes } from "../../utilities/status_codes";
 import { Types } from "mongoose";
 
@@ -58,27 +58,32 @@ export const getDevotionalByDateService = withServiceErrorHandling(async (date: 
 
 // ── ADMIN ─────────────────────────────────────────────────────────────────
 
+export type DevotionalInput = {
+  seriesTitle?: string;
+  author?: string;
+  topic: string;
+  bibleVerseReference: string;
+  bibleVerse?: string;
+  exhortation: string;
+  sections?: IDevotionalSection[];
+  confession?: string;
+  prayer?: string;
+  date: string;
+};
+
 export const createDevotionalService = withServiceErrorHandling(
-  async ({
-    topic, bibleVerse, bibleVerseReference, exhortation,
-    scriptureForMeditation, meditationReference, date, publishedBy,
-  }: {
-    topic: string; bibleVerse: string; bibleVerseReference: string;
-    exhortation: string; scriptureForMeditation: string;
-    meditationReference: string; date: string; publishedBy: string;
-  }) => {
+  async ({ publishedBy, ...fields }: DevotionalInput & { publishedBy: string }) => {
     // Check if a devotional already exists for this date
-    const existing = await Devotional.findOne({ date });
+    const existing = await Devotional.findOne({ date: fields.date });
     if (existing) {
       throw createError(
-        `A devotional already exists for ${date}. Edit the existing one instead.`,
+        `A devotional already exists for ${fields.date}. Edit the existing one instead.`,
         StatusCodes.Conflict
       );
     }
 
     const devotional = await Devotional.create({
-      topic, bibleVerse, bibleVerseReference, exhortation,
-      scriptureForMeditation, meditationReference, date,
+      ...fields,
       publishedBy: new Types.ObjectId(publishedBy), // ← cast to ObjectId
     });
 
@@ -88,14 +93,14 @@ export const createDevotionalService = withServiceErrorHandling(
 );
 
 export const updateDevotionalService = withServiceErrorHandling(
-  async ({ id, updates }: { id: string; updates: Partial<{ topic: string; bibleVerse: string; bibleVerseReference: string; exhortation: string; scriptureForMeditation: string; meditationReference: string; date: string; isPublished: boolean }> }) => {
+  async ({ id, updates }: { id: string; updates: Partial<DevotionalInput & { isPublished: boolean }> }) => {
     // If date is being changed, check for conflicts
     if (updates.date) {
       const conflict = await Devotional.findOne({ date: updates.date, _id: { $ne: id } });
       if (conflict) throw createError(`A devotional already exists for ${updates.date}`, StatusCodes.Conflict);
     }
 
-    const devotional = await Devotional.findByIdAndUpdate(id, updates, { new: true })
+    const devotional = await Devotional.findByIdAndUpdate(id, updates, { new: true, runValidators: true })
       .populate("publishedBy", "_id fullName avatarUrl");
     if (!devotional) throw createError("Devotional not found", StatusCodes.NotFound);
 
